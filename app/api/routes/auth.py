@@ -5,7 +5,6 @@ from app.models.user import User
 from app.schemas.auth import SignupRequest, LoginRequest, TokenResponse
 from app.core.security import hash_password, verify_password
 from app.core.jwt import create_access_token
-import traceback
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -31,6 +30,7 @@ def signup(data: SignupRequest, db: Session = Depends(get_db)):
             "message": "User created successfully",
             "access_token": jwt_token,
             "email": user.email,
+            "user_id": user.id
         }
 
     except HTTPException:
@@ -64,6 +64,7 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
         return {
             "email": user.email,
             "access_token": jwt_token,
+            "user_id": user.id
         }
 
     except HTTPException:
@@ -71,7 +72,6 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 
     except Exception as e:
         print("Error during login:", str(e))
-        traceback.print_exc()
         raise HTTPException(
             status_code=500, detail=f"Unexpected error during login: {str(e)}"
         )

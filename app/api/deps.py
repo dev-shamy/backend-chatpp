@@ -1,29 +1,15 @@
-from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
-from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.models.user import User
-from app.core.jwt import SECRET_KEY, ALGORITHM
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer
+from jose import jwt
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+security = HTTPBearer()
 
+SECRET_KEY = "SUPER_SECRET_KEY_CHANGE_THIS"
+ALGORITHM = "HS256"
 
-def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-):
+def get_current_user(token=Depends(security)):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    user = db.query(User).filter(User.id == int(user_id)).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-
-    return user
+        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload["user_id"]
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)

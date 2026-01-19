@@ -12,3 +12,4 @@ class LoginRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     email: str
+    user_id: int

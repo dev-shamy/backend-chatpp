@@ -10,5 +10,5 @@ def hash_password(password: str) -> str:
     return pwd_context.hash(sha256_hash)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    sha256_hash = hashlib.sha256(plain_password.encode('utf-8')).hexdigest()
+    sha256_hash = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
     return pwd_context.verify(sha256_hash, hashed_password)

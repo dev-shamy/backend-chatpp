@@ -5,7 +5,7 @@ pydantic==2.5.0
 pydantic-settings==2.1.0
 
 # WebSocket
-websockets==12.0
+# websockets==12.0
 
 # Database
 sqlalchemy==2.0.23
@@ -13,3 +13,6 @@ sqlalchemy==2.0.23
 # Utilities
 python-multipart==0.0.6
 python-dotenv==1.0.0
+
+# Socket.IO (for socketio_app)
+python-socketio[asyncio]==5.11.0

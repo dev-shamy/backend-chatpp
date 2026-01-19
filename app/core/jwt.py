@@ -30,5 +30,6 @@ def verify_jwt_token(token: str, db: Session):
             return None
         return user
 
-    except JWTError:
+    except JWTError as e:
+        print("Error at verify token: ", str(e))
         return None

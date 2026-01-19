@@ -1,9 +1,15 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-
-class PersonalMessage(BaseModel):
-    sender_id: str
-    receiver_id: str
+class MessageResponse(BaseModel):
+    id: int
+    chat_id: int
+    sender_id: int
+    receiver_id: int | None
     content: str
-    timestamp: datetime
+    is_read: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+

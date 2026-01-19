@@ -6,8 +6,10 @@ from app.core.logging_config import setup_logging
 from app.db.base import Base
 from app.db.session import engine
 import uvicorn
-from app.websocket.main import router as websocket_router
+from socketio_app.main import sio, register_socket_events
 from app.api.routes.auth import router as auth_routes
+from app.api.routes.user import router as user_routes
+import socketio  # type: ignore
 
 # Setup logging
 setup_logging()
@@ -16,14 +18,14 @@ setup_logging()
 Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
-app = FastAPI(
+fastapi_app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     debug=settings.DEBUG,
 )
 
 # CORS middleware
-app.add_middleware(
+fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
@@ -31,10 +33,11 @@ app.add_middleware(
     allow_headers=settings.CORS_ALLOW_HEADERS,
 )
 
-app.include_router(websocket_router)
-app.include_router(auth_routes)
 
-@app.get("/", tags=["root"])
+fastapi_app.include_router(auth_routes)
+fastapi_app.include_router(user_routes)
+
+@fastapi_app.get("/", tags=["root"])
 async def root():
     """Root endpoint with API information"""
     return {
@@ -42,11 +45,21 @@ async def root():
     }
 
 
-@app.get("/health", tags=["health"])
+@fastapi_app.get("/health", tags=["health"])
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
 
+
+# Now wrap FastAPI app with socketio ASGI app for the final combined ASGI app:
+app = socketio.ASGIApp(
+    socketio_server=sio,
+    other_asgi_app=fastapi_app,
+    socketio_path="socket.io",
+)
+
+# Register socket events
+register_socket_events(sio)
 
 if __name__ == "__main__":
     uvicorn.run(
